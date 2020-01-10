@@ -1,5 +1,5 @@
 const admin = require('../functions/node_modules/firebase-admin/lib');
-const serviceAccount = require("./geneanno-firebase-adminsdk-gdp9y-8a94e30145.json");
+const serviceAccount = require("./geneanno-firebase-adminsdk-gdp9y-e3d054da18.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
