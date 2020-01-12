@@ -27,7 +27,7 @@
         body { border-top: 16px solid #ffa100; }
       }
       #message textarea { width: 98%; height: 400px; font-size: 16px; padding: 5px}
-      #box {display: none; background-color: #FFFFFF; width: 200px; height: 200px; position: absolute;}
+      #box {display: none; max-width: 200px; position: absolute;}
 
       /*** Table Styles **/
       th {color:#D5DDE5; background:#1b1e24; font-size:12px; font-weight: 400; padding:8px; text-align:left; vertical-align:middle;}
@@ -42,18 +42,26 @@
 
     <script>
 
+      let table = {}, snapshot, r
+
       $(document).mouseup((e) => {
-          if (!$("#box").is(e.target) && $("#box").has(e.target).length === 0) $("#box").hide(500)
+          if (!$("#box").is(e.target) && $("#box").has(e.target).length === 0) $("#box").hide()
       });
 
-      function box(e, html){
+      const box = (e, row, col) => {
+        let html = ''
+        table[row][col].map((e,i) => {
+          if (i<15) {
+            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(e.value/5*100)}">${e.name || "NA"}</td>`
+          }
+        })
         $('#box').html(html)
         $('#box').css({left: e.clientX+'px', top: e.clientY+'px'});
-        $('#box').show(500)
+        $('#box').show()
       }
 
-      function perc2color(perc) {
-        var r, g, b = 0;
+      const perc2color = (perc) => {
+        let r, g, b = 0;
         if(perc < 50) {
           g = 255;
           r = Math.round(5.1 * perc);
@@ -62,29 +70,29 @@
           r = 255;
           g = Math.round(510 - 5.10 * perc);
         }
-        var h = r * 0x10000 + g * 0x100 + b * 0x1;
+        let h = r * 0x10000 + g * 0x100 + b * 0x1;
         return '#' + ('000000' + h.toString(16)).slice(-6);
       }
 
       document.addEventListener('DOMContentLoaded', async () => {
 
-        var table = {}
+
         refseq_convert = JSON.parse(refseq_convert)
 
         document.getElementById("message").innerHTML = '<h2>GeneAnno</h2><h1>Processing...</h1>'
         
-        var genes = JSON.parse(localStorage.getItem('genes'))
+        let genes = JSON.parse(localStorage.getItem('genes'))
         console.log(genes)
         
-        for(var gene of genes) {
+        for(let gene of genes) {
           document.getElementById("message").innerHTML = `<h2>GeneAnno</h2><h1>Processing...(${gene})</h1>`
           
           //Refseq
-          var snapshot = await firebase.firestore().collection('refseq').where('name', '==', gene.toUpperCase()).get()
-          var r = []
+          snapshot = await firebase.firestore().collection('refseq').where('name', '==', gene.toUpperCase()).get()
+          r = []
           snapshot.forEach(doc => {
-            var data = doc.data()
-            var chr = refseq_convert.find(e => e.refseq_id == data.contig)
+            let data = doc.data()
+            let chr = refseq_convert.find(e => e.refseq_id == data.contig)
             if (!chr) return
             r.push({
               name: data.name,
@@ -100,40 +108,40 @@
           table[gene] = r.sort((a,b) => a.contig > b.contig ? 1 : -1)[0]
 
           //DISEASE
-          var snapshot = await firebase.firestore().collection('disease_textmining').where('SYMBOL', '==', gene.toUpperCase()).get()
-          var r = []
+          snapshot = await firebase.firestore().collection('disease_textmining').where('SYMBOL', '==', gene.toUpperCase()).get()
+          r = []
           snapshot.forEach(doc => {
-            var data = doc.data()
+            let data = doc.data()
             r.push({
-              tm_name: data.NAME,
-              tm_confidence: data.Confidence,
+              name: data.NAME,
+              value: data.Confidence,
             })
           })
           table[gene] = Object.assign(table[gene], {tm: r.sort((a,b) => {a.tm_confidence < b.tm_confidence ? 1 : -1})})
-          var snapshot = await firebase.firestore().collection('disease_experiments').where('SYMBOL', '==', gene.toUpperCase()).get()
-          var r = []
+          snapshot = await firebase.firestore().collection('disease_experiments').where('SYMBOL', '==', gene.toUpperCase()).get()
+          r = []
           snapshot.forEach(doc => {
-            var data = doc.data()
+            let data = doc.data()
             r.push({
-              exp_name: data.NAME,
-              exp_confidence: data.Confidence,
+              name: data.NAME,
+              value: data.Confidence,
             })
           })
           table[gene] = Object.assign(table[gene], {exp: r.sort((a,b) => {a.exp_confidence < b.exp_confidence ? 1 : -1})})
-          var snapshot = await firebase.firestore().collection('disease_knowledge').where('SYMBOL', '==', gene.toUpperCase()).get()
-          var r = []
+          snapshot = await firebase.firestore().collection('disease_knowledge').where('SYMBOL', '==', gene.toUpperCase()).get()
+          r = []
           snapshot.forEach(doc => {
-            var data = doc.data()
+            let data = doc.data()
             r.push({
-              kl_name: data.NAME,
-              kl_confidence: data.Confidence,
+              name: data.NAME,
+              value: data.Confidence,
             })
           })
           table[gene] = Object.assign(table[gene], {kl: r.sort((a,b) => {a.kl_confidence < b.kl_confidence ? 1 : -1})})
 
         }
 
-        var tableHtml = `<table style="width:100%">`
+        let tableHtml = `<table style="width:100%">`
         tableHtml += `<tr>
           <th>Name</th>
           <th>Chr</th>
@@ -147,7 +155,6 @@
           <th>Knowledge</th>
           </tr>`
         Object.keys(table).map(row => {
-
           tableHtml += `<tr>
             <td>${table[row].name}</td>
             <td>${table[row].chr}</td>
@@ -156,9 +163,9 @@
             <td>${table[row].type}</td>
             <td>${table[row].strand}</td>
             <td>${table[row].synonym}</td>
-            <td onclick="box(event, )" style="cursor: pointer; background-color: ${perc2color(table[row].tm[0].tm_confidence/5*100)}">${table[row].tm[0].tm_name || "NA"}</td>
-            <td style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].exp_confidence/5*100:0)}">${table[row].exp[0]?table[row].exp[0].exp_name:"NA"}</td>
-            <td style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].kl_confidence/5*100:0)}">${table[row].kl[0]?table[row].kl[0].kl_name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'tm')" style="cursor: pointer; background-color: ${perc2color(table[row].tm[0]?table[row].tm[0].value/5*100:0)}">${table[row].tm[0]?table[row].tm[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'exp')" style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].value/5*100:0)}">${table[row].exp[0]?table[row].exp[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'kl')" style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].value/5*100:0)}">${table[row].kl[0]?table[row].kl[0].name:"NA"}</td>
             </tr>`
         })
         tableHtml += `</table>`
