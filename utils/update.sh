@@ -15,12 +15,15 @@
 # node impc-import.js
 
 # HOM
-wget http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt
+# wget http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt
 
 
 # RefSeq
 # wget ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gff.gz
-# gunzip RCh38_latest_genomic.gff.gz
+# gunzip GRCh38_latest_genomic.gff.gz
+# awk 'BEGIN{print("name\tstart\tend\tstrand\tdescription\tsynonym\tbiotype")}$0!~/^#/&&$3=="gene"{split($9,a1,"Name=");split(a1[2],a2,";");split($9,b1,"description=");split(b1[2],b2,";");split($9,c1,"gene_synonym=");split(c1[2],c2,";");split($9,d1,"gene_biotype=");split(d1[2],d2,";");print(a2[1]"\t"$1"\t"$4"\t"$5"\t"$7"\t"b2[1]"\t"c2[1]"\t"d2[1])}' FS="\t" OFS="\t" GRCh38_latest_genomic.gff | sed "s/\'//g" > GRCh38_latest.tsv
+# csvjson GRCh38_latest.tsv > GRCh38_latest.json
+node refseq-import.js
 
 # DISEASE
 # wget http://download.jensenlab.org/human_disease_textmining_filtered.tsv
@@ -36,7 +39,7 @@ wget http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt
 # echo "ID	SYMBOL	DOID	NAME	SOURCE	Evidence	Confidence" | cat - human_disease_experiments_filtered.tsv > human_disease_experiments_filtered.header.tsv
 # csvjson human_disease_experiments_filtered.header.tsv > human_disease_experiments_filtered.json
 
-node disease-import.js
+# node disease-import.js
 
-#rm *tsv
-#rm *csv
+# rm *tsv
+# rm *csv

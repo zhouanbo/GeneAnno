@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GeneAnno</title>
+
+    <!-- update the version number as needed -->
+    <script defer src="/__/firebase/7.6.2/firebase-app.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/7.6.2/firebase-firestore.js"></script>
+    <!-- initialize the SDK after all desired features are loaded -->
+    <script defer src="/__/firebase/init.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.js"></script>
+    <script defer src="js/refseq_conversion.js"></script>
+
+    <style media="screen">
+      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
+      #message { background: white; max-width: 100%; margin: 16px auto 16px; padding: 32px 24px; border-radius: 3px; }
+      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
+      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
+      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
+      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 10px; border-radius: 4px; width: 150px; margin-top: 15px; cursor: pointer;}
+      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
+      @media (max-width: 600px) {
+        body, #message { margin-top: 0; background: white; box-shadow: none; }
+        body { border-top: 16px solid #ffa100; }
+      }
+      #message textarea { width: 98%; height: 400px; font-size: 16px; padding: 5px}
+      #box {display: none; background-color: #FFFFFF; width: 200px; height: 200px; position: absolute;}
+
+      /*** Table Styles **/
+      th {color:#D5DDE5; background:#1b1e24; font-size:12px; font-weight: 400; padding:8px; text-align:left; vertical-align:middle;}
+      tr {color:#666B85; font-size:12px; font-weight:normal;}
+      tr:nth-child(odd) td {background:#EBEBEB;}
+      td {background:#FFFFFF; padding:8px; text-align:left; vertical-align:middle; font-weight:300; font-size:12px;}
+    </style>
+  </head>
+  <body>
+    <div id="message"></div>
+    <div id="box" />
+
+    <script>
+
+      $(document).mouseup((e) => {
+          if (!$("#box").is(e.target) && $("#box").has(e.target).length === 0) $("#box").hide(500)
+      });
+
+      function box(e, html){
+        $('#box').html(html)
+        $('#box').css({left: e.clientX+'px', top: e.clientY+'px'});
+        $('#box').show(500)
+      }
+
+      function perc2color(perc) {
+        var r, g, b = 0;
+        if(perc < 50) {
+          g = 255;
+          r = Math.round(5.1 * perc);
+        }
+        else {
+          r = 255;
+          g = Math.round(510 - 5.10 * perc);
+        }
+        var h = r * 0x10000 + g * 0x100 + b * 0x1;
+        return '#' + ('000000' + h.toString(16)).slice(-6);
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+
+        var table = {}
+        refseq_convert = JSON.parse(refseq_convert)
+
+        document.getElementById("message").innerHTML = '<h2>GeneAnno</h2><h1>Processing...</h1>'
+        
+        var genes = JSON.parse(localStorage.getItem('genes'))
+        console.log(genes)
+        
+        for(var gene of genes) {
+          document.getElementById("message").innerHTML = `<h2>GeneAnno</h2><h1>Processing...(${gene})</h1>`
+          
+          //Refseq
+          var snapshot = await firebase.firestore().collection('refseq').where('name', '==', gene.toUpperCase()).get()
+          var r = []
+          snapshot.forEach(doc => {
+            var data = doc.data()
+            var chr = refseq_convert.find(e => e.refseq_id == data.contig)
+            if (!chr) return
+            r.push({
+              name: data.name,
+              chr: chr.ucsc_id,
+              contig: data.contig,
+              start: data.start,
+              end: data.end,
+              type: data.biotype,
+              strand: data.strand,
+              synonym: data.synonym
+            })
+          })
+          table[gene] = r.sort((a,b) => a.contig > b.contig ? 1 : -1)[0]
+
+          //DISEASE
+          var snapshot = await firebase.firestore().collection('disease_textmining').where('SYMBOL', '==', gene.toUpperCase()).get()
+          var r = []
+          snapshot.forEach(doc => {
+            var data = doc.data()
+            r.push({
+              tm_name: data.NAME,
+              tm_confidence: data.Confidence,
+            })
+          })
+          table[gene] = Object.assign(table[gene], {tm: r.sort((a,b) => {a.tm_confidence < b.tm_confidence ? 1 : -1})})
+          var snapshot = await firebase.firestore().collection('disease_experiments').where('SYMBOL', '==', gene.toUpperCase()).get()
+          var r = []
+          snapshot.forEach(doc => {
+            var data = doc.data()
+            r.push({
+              exp_name: data.NAME,
+              exp_confidence: data.Confidence,
+            })
+          })
+          table[gene] = Object.assign(table[gene], {exp: r.sort((a,b) => {a.exp_confidence < b.exp_confidence ? 1 : -1})})
+          var snapshot = await firebase.firestore().collection('disease_knowledge').where('SYMBOL', '==', gene.toUpperCase()).get()
+          var r = []
+          snapshot.forEach(doc => {
+            var data = doc.data()
+            r.push({
+              kl_name: data.NAME,
+              kl_confidence: data.Confidence,
+            })
+          })
+          table[gene] = Object.assign(table[gene], {kl: r.sort((a,b) => {a.kl_confidence < b.kl_confidence ? 1 : -1})})
+
+        }
+
+        var tableHtml = `<table style="width:100%">`
+        tableHtml += `<tr>
+          <th>Name</th>
+          <th>Chr</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Type</th>
+          <th>Strand</th>
+          <th>Synonym</th>
+          <th>Textmining</th>
+          <th>Experiments</th>
+          <th>Knowledge</th>
+          </tr>`
+        Object.keys(table).map(row => {
+
+          tableHtml += `<tr>
+            <td>${table[row].name}</td>
+            <td>${table[row].chr}</td>
+            <td>${table[row].start}</td>
+            <td>${table[row].end}</td>
+            <td>${table[row].type}</td>
+            <td>${table[row].strand}</td>
+            <td>${table[row].synonym}</td>
+            <td onclick="box(event, )" style="cursor: pointer; background-color: ${perc2color(table[row].tm[0].tm_confidence/5*100)}">${table[row].tm[0].tm_name || "NA"}</td>
+            <td style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].exp_confidence/5*100:0)}">${table[row].exp[0]?table[row].exp[0].exp_name:"NA"}</td>
+            <td style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].kl_confidence/5*100:0)}">${table[row].kl[0]?table[row].kl[0].kl_name:"NA"}</td>
+            </tr>`
+        })
+        tableHtml += `</table>`
+
+        document.getElementById("message").innerHTML = `
+          <h2>GeneAnno</h2>
+          <h1>Report</h1>
+          <div id="table">${tableHtml}</div>
+          <a target="_blank" onclick="alert('hi')">Download</a>
+        `
+      });
+    </script>
+  </body>
+</html>

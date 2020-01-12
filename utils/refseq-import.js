@@ -6,8 +6,8 @@ admin.initializeApp({
   databaseURL: "https://geneanno.firebaseio.com"
 });
 
-const rawData = require("./ALL_genotype_phenotype.json");
-const data = {impc: rawData}
+const rawData = require("./GRCh38_latest.json");
+const data = {refseq: rawData}
 
 /**
  * Data is a collection if
