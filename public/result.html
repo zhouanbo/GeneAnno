@@ -31,7 +31,7 @@
 
       /*** Table Styles **/
       th {color:#D5DDE5; background:#1b1e24; font-size:12px; font-weight: 400; padding:8px; text-align:left; vertical-align:middle;}
-      tr {color:#666B85; font-size:12px; font-weight:normal;}
+      tr {color:black; font-size:12px; font-weight:normal;}
       tr:nth-child(odd) td {background:#EBEBEB;}
       td {background:#FFFFFF; padding:8px; text-align:left; vertical-align:middle; font-weight:300; font-size:12px;}
     </style>
@@ -87,6 +87,7 @@
         for(let gene of genes) {
           document.getElementById("message").innerHTML = `<h2>GeneAnno</h2><h1>Processing...(${gene})</h1>`
           
+
           //Refseq
           snapshot = await firebase.firestore().collection('refseq').where('name', '==', gene.toUpperCase()).get()
           r = []
@@ -107,8 +108,9 @@
           })
           table[gene] = r.sort((a,b) => a.contig > b.contig ? 1 : -1)[0]
 
+
           //DISEASE
-          snapshot = await firebase.firestore().collection('disease_textmining').where('SYMBOL', '==', gene.toUpperCase()).get()
+          snapshot = await firebase.firestore().collection('disease_textmining').where('SYMBOL', '==', gene.toUpperCase()).orderBy('Confidence', 'desc').get()
           r = []
           snapshot.forEach(doc => {
             let data = doc.data()
@@ -117,8 +119,9 @@
               value: data.Confidence,
             })
           })
-          table[gene] = Object.assign(table[gene], {tm: r.sort((a,b) => {a.tm_confidence < b.tm_confidence ? 1 : -1})})
-          snapshot = await firebase.firestore().collection('disease_experiments').where('SYMBOL', '==', gene.toUpperCase()).get()
+          table[gene] = Object.assign(table[gene], {tm: r})
+
+          snapshot = await firebase.firestore().collection('disease_experiments').where('SYMBOL', '==', gene.toUpperCase()).orderBy('Confidence', 'desc').get()
           r = []
           snapshot.forEach(doc => {
             let data = doc.data()
@@ -127,8 +130,9 @@
               value: data.Confidence,
             })
           })
-          table[gene] = Object.assign(table[gene], {exp: r.sort((a,b) => {a.exp_confidence < b.exp_confidence ? 1 : -1})})
-          snapshot = await firebase.firestore().collection('disease_knowledge').where('SYMBOL', '==', gene.toUpperCase()).get()
+          table[gene] = Object.assign(table[gene], {exp: r})
+
+          snapshot = await firebase.firestore().collection('disease_knowledge').where('SYMBOL', '==', gene.toUpperCase()).orderBy('Confidence', 'desc').get()
           r = []
           snapshot.forEach(doc => {
             let data = doc.data()
@@ -137,7 +141,7 @@
               value: data.Confidence,
             })
           })
-          table[gene] = Object.assign(table[gene], {kl: r.sort((a,b) => {a.kl_confidence < b.kl_confidence ? 1 : -1})})
+          table[gene] = Object.assign(table[gene], {kl: r})
 
         }
 
