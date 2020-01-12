@@ -158,7 +158,7 @@
 
           //HumanBase
           if (ncbi_convert[gene.toUpperCase()]) {
-            await fetch(`http://us-central1-geneanno.cloudfunctions.net/humanbase/?id=${ncbi_convert[gene.toUpperCase()]}`).then((response) => {
+            await fetch(`https://us-central1-geneanno.cloudfunctions.net/humanbase/?id=${ncbi_convert[gene.toUpperCase()]}`).then((response) => {
               return response.json();
             })
             .then((myJson) => {
