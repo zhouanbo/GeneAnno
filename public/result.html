@@ -57,7 +57,11 @@
           }
         })
         $('#box').html(html)
-        $('#box').css({left: e.clientX+'px', top: e.clientY+'px'});
+        if(e.clientX+200 <= $(window).width()) {
+          $('#box').css({left: e.clientX+'px', top: e.clientY+'px'})
+        } else {
+          $('#box').css({left: (e.clientX-200)+'px', top: e.clientY+'px'})
+        }
         $('#box').show()
       }
 
