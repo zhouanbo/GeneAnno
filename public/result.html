@@ -53,7 +53,7 @@
         let html = ''
         table[row][col].map((e,i) => {
           if (i<15) {
-            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(e.value/max*100)}">${e.name || "NA"}</td>`
+            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(Math.min(e.value,max)/max*100)}">${e.name || "NA"}</td>`
           }
         })
         $('#box').html(html)
@@ -175,6 +175,23 @@
               table[gene] = Object.assign(table[gene], {hb: r});
             });
           }
+
+
+          //GTEx
+          snapshot = await firebase.firestore().collection('gtex').where('Description', '==', gene.toUpperCase()).limit(1).get()
+          r = []
+          snapshot.forEach(doc => {
+            let data = doc.data()
+            delete data.Name
+            delete data.Description
+            Object.keys(data).map(e => {
+              r.push({
+                name: e,
+                value: data[e]
+              })
+            })
+          })
+          table[gene] = Object.assign(table[gene], {gt: r.sort((a,b) => a.value < b.value ? 1 : -1)})
           
 
         }
@@ -193,6 +210,7 @@
           <th>Experiments</th>
           <th>Knowledge</th>
           <th>Prediction</th>
+          <th>GTEx</th>
           </tr>`
         Object.keys(table).map((row, idx) => {
           tableHtml += `<tr>
@@ -208,6 +226,7 @@
             <td onclick="box(event, '${row}', 'exp', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].value/5*100:0)}">${table[row].exp[0]?table[row].exp[0].name:"NA"}</td>
             <td onclick="box(event, '${row}', 'kl', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].value/5*100:0)}">${table[row].kl[0]?table[row].kl[0].name:"NA"}</td>
             <td onclick="box(event, '${row}', 'hb')" style="cursor: pointer; background-color: ${perc2color(table[row].hb?table[row].hb[0].value/1*100:0)}">${table[row].hb?table[row].hb[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'gt', ${Math.max(...table[row].gt.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt[0]?Math.min(table[row].gt[0].value,Math.max(...table[row].gt.map(e => e.value)))/Math.max(...table[row].gt.map(e => e.value))*100:0)}">${table[row].gt[0]?table[row].gt[0].name:"NA"}</td>
             </tr>`
         })
         tableHtml += `</table>`

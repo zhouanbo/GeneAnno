@@ -48,5 +48,13 @@
 # csvjson forweb_cleaned_exac_r03_march16_z_data_pLI.txt > exac_r03.json
 # node exac-import.js
 
+
+# GTEx
+# wget https://storage.googleapis.com/gtex_analysis_v8/rna_seq_data/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct.gz
+# gunzip GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct.gz
+# csvjson GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.gct > GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_median_tpm.json
+# node gtex-import.js
+
+
 # rm *tsv
 # rm *csv
