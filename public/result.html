@@ -181,7 +181,7 @@
             if(e.value>6) e.value = 6
             return e
           })
-          table[gene] = Object.assign(table[gene], {ho: r.sort((a,b) => a.value < b.value ? 1 : -1)})
+          table[gene] = Object.assign(table[gene], {ho: r.sort((a,b) => a.tvalue < b.tvalue ? 1 : -1)})
 
 
           //HumanBase
