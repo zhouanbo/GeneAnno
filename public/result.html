@@ -87,15 +87,15 @@
         document.getElementById("message").innerHTML = '<h2>GeneAnno</h2><h1>Processing...</h1>'
         
         let genes = JSON.parse(localStorage.getItem('genes'))
-        console.log(genes)
         
         for(let gene of genes) {
           document.getElementById("message").innerHTML = `<h2>GeneAnno</h2><h1>Processing...(${gene})</h1>`
-          
+          table[gene] = {}
 
           //Refseq
           snapshot = await firebase.firestore().collection('refseq').where('name', '==', gene.toUpperCase()).get()
           r = []
+
           snapshot.forEach(doc => {
             let data = doc.data()
             let chr = refseq_convert.find(e => e.refseq_id == data.contig)
@@ -111,7 +111,7 @@
               synonym: data.synonym
             })
           })
-          table[gene] = r.sort((a,b) => a.contig > b.contig ? 1 : -1)[0]
+          table[gene] = Object.assign(table[gene], r.sort((a,b) => a.contig > b.contig ? 1 : -1)[0])
 
 
           //ExAC
@@ -194,16 +194,16 @@
           <th>Knowledge</th>
           <th>Prediction</th>
           </tr>`
-        Object.keys(table).map(row => {
+        Object.keys(table).map((row, idx) => {
           tableHtml += `<tr>
-            <td>${table[row].name}</td>
+            <td>${table[row].name || genes[idx]}</td>
             <td>${table[row].chr}</td>
             <td>${table[row].start}</td>
             <td>${table[row].end}</td>
             <td>${table[row].type}</td>
             <td>${table[row].strand}</td>
             <td>${table[row].synonym}</td>
-            <td style="background-color: ${perc2color(table[row].pLI?table[row].pLI/1*100:0)}">${table[row].pLI.toFixed(2)}</td>
+            <td style="background-color: ${perc2color(table[row].pLI?table[row].pLI/1*100:0)}">${table[row].pLI?table[row].pLI.toFixed(2):"NA"}</td>
             <td onclick="box(event, '${row}', 'tm', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].tm[0]?table[row].tm[0].value/5*100:0)}">${table[row].tm[0]?table[row].tm[0].name:"NA"}</td>
             <td onclick="box(event, '${row}', 'exp', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].value/5*100:0)}">${table[row].exp[0]?table[row].exp[0].name:"NA"}</td>
             <td onclick="box(event, '${row}', 'kl', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].value/5*100:0)}">${table[row].kl[0]?table[row].kl[0].name:"NA"}</td>

@@ -30,7 +30,7 @@
       <h2>GeneAnno</h2>
       <h1>Please paste in your genes:</h1>
       <textarea id="genes"></textarea>
-      <a target="_blank" onclick="var genes=document.getElementById('genes').value.split(/[\s,]+/);localStorage.setItem('genes',JSON.stringify(genes)); window.location.href = 'result.html';">Submit</a>
+      <a target="_blank" onclick="var genes=document.getElementById('genes').value.split(/[\s,]+/); genes=genes.filter(e=>/\S/.test(e));localStorage.setItem('genes',JSON.stringify(genes)); window.location.href = 'result.html';">Submit</a>
     </div>
   </body>
 </html>
