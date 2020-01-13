@@ -54,7 +54,7 @@
         let html = ''
         if (table[row][col]) table[row][col].map((e,i) => {
           if (i<15) {
-            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(Math.min(e.value,max)/max*100)}">${e.name || "NA"}</td>`
+            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(Math.min(e.value,max)/max*100)}"><span style="font-weight: 800">${(e.tvalue?e.tvalue:e.value).toFixed(2)+" "}</span>${e.name || "NA"}</td>`
           }
         })
         $('#box').html(html)
@@ -177,6 +177,8 @@
             ))
           ).map(e => {
             e.value = -Math.log10(e.value)
+            e.tvalue = e.value
+            if(e.value>6) e.value = 6
             return e
           })
           table[gene] = Object.assign(table[gene], {ho: r.sort((a,b) => a.value < b.value ? 1 : -1)})
@@ -244,13 +246,21 @@
             <td>${table[row].type}</td>
             <td>${table[row].strand}</td>
             <td>${table[row].synonym}</td>
+            
             <td style="background-color: ${perc2color(table[row].pLI?table[row].pLI/1*100:0)}">${table[row].pLI?table[row].pLI.toFixed(2):"NA"}</td>
+
             <td onclick="box(event, '${row}', 'tm', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].tm[0]?table[row].tm[0].value/5*100:0)}">${table[row].tm[0]?table[row].tm[0].name:"NA"}</td>
+            
             <td onclick="box(event, '${row}', 'exp', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].value/5*100:0)}">${table[row].exp[0]?table[row].exp[0].name:"NA"}</td>
+            
             <td onclick="box(event, '${row}', 'kl', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].value/5*100:0)}">${table[row].kl[0]?table[row].kl[0].name:"NA"}</td>
-            <td onclick="box(event, '${row}', 'ho', ${Math.max(...table[row].ho.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].ho[0]?Math.min(table[row].ho[0].value,Math.max(...table[row].ho.map(e => e.value)))/Math.max(...table[row].ho.map(e => e.value))*100:0)}">${table[row].ho[0]?table[row].ho[0].name:"NA"}</td>
+            
+            <td onclick="box(event, '${row}', 'ho', 6)" style="cursor: pointer; background-color: ${perc2color(table[row].ho[0]?table[row].ho[0].value/6*100:0)}">${table[row].ho[0]?table[row].ho[0].name:"NA"}</td>
+            
             <td onclick="box(event, '${row}', 'hb')" style="cursor: pointer; background-color: ${perc2color(table[row].hb?table[row].hb[0].value/1*100:0)}">${table[row].hb?table[row].hb[0].name:"NA"}</td>
-            <td onclick="box(event, '${row}', 'gt', ${Math.max(4,Math.max(...table[row].gt.map(e => e.value)))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt[0]?Math.min(table[row].gt[0].value,Math.max(...table[row].gt.map(e => e.value)))/Math.max(4,Math.max(...table[row].gt.map(e => e.value)))*100:0)}">${table[row].gt[0]?table[row].gt[0].name:"NA"}</td>
+            
+            <td onclick="box(event, '${row}', 'gt', ${Math.max(...table[row].gt.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt[0]?table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100:0)}">${table[row].gt[0]?table[row].gt[0].name:"NA"}</td>
+            
             </tr>`
         })
         tableHtml += `</table>`
