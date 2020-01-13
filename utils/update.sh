@@ -16,7 +16,8 @@
 
 # HOM
 # wget http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt
-
+# awk '$2=="mouse, laboratory" || $2=="human"{print}' FS="\t" HOM_AllOrganism.rpt > HOM_AllOrganism.filter.rpt
+# awk 'BEGIN{print("let hom_convert={")}{a[$1]=$4;if($1 in a){print("\""$4"\":\""a[$1]"\",")}}END{print("}")}' FS="\t" HOM_AllOrganism.filter.rpt > HOM_AllOrganism.js
 
 # RefSeq
 # wget ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gff.gz

@@ -14,6 +14,7 @@
     <script src="https://code.jquery.com/jquery-3.4.1.slim.js"></script>
     <script defer src="js/refseq_conversion.js"></script>
     <script defer src="js/ncbi_conversion.js"></script>
+    <script defer src="js/hom_conversion.js"></script>
 
     <style media="screen">
       body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
@@ -51,7 +52,7 @@
 
       const box = (e, row, col, max=1) => {
         let html = ''
-        table[row][col].map((e,i) => {
+        if (table[row][col]) table[row][col].map((e,i) => {
           if (i<15) {
             html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(Math.min(e.value,max)/max*100)}">${e.name || "NA"}</td>`
           }
@@ -160,6 +161,27 @@
           table[gene] = Object.assign(table[gene], {kl: r})
 
 
+          //IMPC
+          snapshot = await firebase.firestore().collection('impc').where('marker_symbol', '==', hom_convert[gene.toUpperCase()]).get()
+          r = []
+          snapshot.forEach(doc => {
+            let data = doc.data()
+            r.push({
+              name: data.mp_term_name,
+              value: data.p_value,
+            })
+          })
+          r = r.filter((e, idx) =>
+            idx === r.findIndex((t) => (
+              t.name === e.name
+            ))
+          ).map(e => {
+            e.value = -Math.log10(e.value)
+            return e
+          })
+          table[gene] = Object.assign(table[gene], {ho: r.sort((a,b) => a.value < b.value ? 1 : -1)})
+
+
           //HumanBase
           if (ncbi_convert[gene.toUpperCase()]) {
             await fetch(`https://us-central1-geneanno.cloudfunctions.net/humanbase/?id=${ncbi_convert[gene.toUpperCase()]}`).then((response) => {
@@ -209,6 +231,7 @@
           <th>Textmining</th>
           <th>Experiments</th>
           <th>Knowledge</th>
+          <th>Mouse</th>
           <th>Prediction</th>
           <th>GTEx</th>
           </tr>`
@@ -225,8 +248,9 @@
             <td onclick="box(event, '${row}', 'tm', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].tm[0]?table[row].tm[0].value/5*100:0)}">${table[row].tm[0]?table[row].tm[0].name:"NA"}</td>
             <td onclick="box(event, '${row}', 'exp', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].value/5*100:0)}">${table[row].exp[0]?table[row].exp[0].name:"NA"}</td>
             <td onclick="box(event, '${row}', 'kl', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].value/5*100:0)}">${table[row].kl[0]?table[row].kl[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'ho', ${Math.max(...table[row].ho.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].ho[0]?Math.min(table[row].ho[0].value,Math.max(...table[row].ho.map(e => e.value)))/Math.max(...table[row].ho.map(e => e.value))*100:0)}">${table[row].ho[0]?table[row].ho[0].name:"NA"}</td>
             <td onclick="box(event, '${row}', 'hb')" style="cursor: pointer; background-color: ${perc2color(table[row].hb?table[row].hb[0].value/1*100:0)}">${table[row].hb?table[row].hb[0].name:"NA"}</td>
-            <td onclick="box(event, '${row}', 'gt', ${Math.max(...table[row].gt.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt[0]?Math.min(table[row].gt[0].value,Math.max(...table[row].gt.map(e => e.value)))/Math.max(...table[row].gt.map(e => e.value))*100:0)}">${table[row].gt[0]?table[row].gt[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'gt', ${Math.max(4,Math.max(...table[row].gt.map(e => e.value)))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt[0]?Math.min(table[row].gt[0].value,Math.max(...table[row].gt.map(e => e.value)))/Math.max(4,Math.max(...table[row].gt.map(e => e.value)))*100:0)}">${table[row].gt[0]?table[row].gt[0].name:"NA"}</td>
             </tr>`
         })
         tableHtml += `</table>`
