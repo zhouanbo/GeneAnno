@@ -57,5 +57,17 @@
 # node gtex-import.js
 
 
+# Allen
+# wget -O genes_martix_csv.zip http://www.brainspan.org/api/v2/well_known_file_download/267666525
+# unzip genes_martix_csv.zip
+# cp allen_convert.js genes_martix_csv/
+# cd genes_martix_csv
+# npm i csv-parse mathjs
+# node allen_convert.js
+# mv allen.json ../
+# cd ..
+node allen-import.js
+
+
 # rm *tsv
 # rm *csv

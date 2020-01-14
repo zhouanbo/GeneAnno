@@ -240,6 +240,23 @@
           })
           if (r.length > 0)
             table[gene] = Object.assign(table[gene], {gt: r.sort((a,b) => a.value < b.value ? 1 : -1)})
+
+
+          //Allen
+          snapshot = await firebase.firestore().collection('allen').where('name', '==', gene.toUpperCase()).limit(1).get()
+          r = []
+          snapshot.forEach(doc => {
+            let data = doc.data()
+            delete data.name
+            Object.keys(data).map(e => {
+              r.push({
+                name: e,
+                value: data[e]
+              })
+            })
+          })
+          if (r.length > 0)
+            table[gene] = Object.assign(table[gene], {al: r.sort((a,b) => a.value < b.value ? 1 : -1)})
           
 
         }
@@ -262,7 +279,8 @@
           <th>Knowledge</th>
           <th>Mouse</th>
           <th>Prediction</th>
-          <th>Expression</th>
+          <th>GTEx</th>
+          <th>BrainSpan</th>
           </tr>`
         Object.keys(table).map((row, idx) => {
           tableHtml += `<tr>
@@ -292,6 +310,8 @@
             
             <td onclick="box(event, '${row}', 'gt', ${table[row].gt?Math.max(...table[row].gt.map(e => e.value)):1})" style="cursor: pointer; background-color: ${perc2color(table[row].gt?(table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100):0)}">${table[row].gt?table[row].gt[0].name:"NA"}</td>
             
+            <td onclick="box(event, '${row}', 'al', ${table[row].al?Math.max(...table[row].al.map(e => e.value)):1})" style="cursor: pointer; background-color: ${perc2color(table[row].al?(table[row].al[0].value/Math.max(...table[row].al.map(e => e.value))*100):0)}">${table[row].al?table[row].al[0].name:"NA"}</td>
+
             </tr>`
         })
         tableHtml += `</table>`
