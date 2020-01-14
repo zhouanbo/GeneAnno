@@ -114,7 +114,8 @@
               synonym: data.synonym
             })
           })
-          table[gene] = Object.assign(table[gene], r.sort((a,b) => a.contig > b.contig ? 1 : -1)[0])
+          if (r.length > 0)
+            table[gene] = Object.assign(table[gene], r.sort((a,b) => a.contig > b.contig ? 1 : -1)[0])
 
 
           //ExAC
@@ -150,7 +151,8 @@
               value: data.Confidence,
             })
           })
-          table[gene] = Object.assign(table[gene], {tm: r})
+          if (r.length > 0)
+            table[gene] = Object.assign(table[gene], {tm: r})
 
           snapshot = await firebase.firestore().collection('disease_experiments').where('SYMBOL', '==', gene.toUpperCase()).orderBy('Confidence', 'desc').get()
           r = []
@@ -161,7 +163,8 @@
               value: data.Confidence,
             })
           })
-          table[gene] = Object.assign(table[gene], {exp: r})
+          if (r.length > 0)
+            table[gene] = Object.assign(table[gene], {exp: r})
 
           snapshot = await firebase.firestore().collection('disease_knowledge').where('SYMBOL', '==', gene.toUpperCase()).orderBy('Confidence', 'desc').get()
           r = []
@@ -172,30 +175,35 @@
               value: data.Confidence,
             })
           })
-          table[gene] = Object.assign(table[gene], {kl: r})
+          if (r.length > 0)
+            table[gene] = Object.assign(table[gene], {kl: r})
 
 
           //IMPC
-          snapshot = await firebase.firestore().collection('impc').where('marker_symbol', '==', hom_convert[gene.toUpperCase()]).get()
-          r = []
-          snapshot.forEach(doc => {
-            let data = doc.data()
-            r.push({
-              name: data.mp_term_name,
-              value: data.p_value,
+          if (hom_convert[gene.toUpperCase()]){
+            snapshot = await firebase.firestore().collection('impc').where('marker_symbol', '==', hom_convert[gene.toUpperCase()]).get()
+            r = []
+            snapshot.forEach(doc => {
+              let data = doc.data()
+              if (data.mp_term_name)
+                r.push({
+                  name: data.mp_term_name,
+                  value: data.p_value == 0 ? 0.0000000001 : data.p_value,
+                })
             })
-          })
-          r = r.filter((e, idx) =>
-            idx === r.findIndex((t) => (
-              t.name === e.name
-            ))
-          ).map(e => {
-            e.value = -Math.log10(e.value)
-            e.tvalue = e.value
-            if(e.value>6) e.value = 6
-            return e
-          })
-          table[gene] = Object.assign(table[gene], {ho: r.sort((a,b) => a.tvalue < b.tvalue ? 1 : -1)})
+            r = r.filter((e, idx) =>
+              idx === r.findIndex((t) => (
+                t.name === e.name
+              ))
+            ).map(e => {
+              e.value = -Math.log10(e.value)
+              e.tvalue = e.value
+              if(e.value>6) e.value = 6
+              return e
+            })
+            if (r.length > 0)
+              table[gene] = Object.assign(table[gene], {ho: r.sort((a,b) => a.tvalue < b.tvalue ? 1 : -1)})
+          }
 
 
           //HumanBase
@@ -210,7 +218,8 @@
                 e.value = e.score
                 return e
               })
-              table[gene] = Object.assign(table[gene], {hb: r});
+              if (r.length > 0)
+                table[gene] = Object.assign(table[gene], {hb: r});
             });
           }
 
@@ -229,7 +238,8 @@
               })
             })
           })
-          table[gene] = Object.assign(table[gene], {gt: r.sort((a,b) => a.value < b.value ? 1 : -1)})
+          if (r.length > 0)
+            table[gene] = Object.assign(table[gene], {gt: r.sort((a,b) => a.value < b.value ? 1 : -1)})
           
 
         }
@@ -269,17 +279,17 @@
 
             <td style="background-color: ${perc2color(table[row].adhdgene?table[row].adhdgene/1*100:0)}">${table[row].adhdgene?table[row].adhdgene:"NA"}</td>
 
-            <td onclick="box(event, '${row}', 'tm', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].tm[0]?table[row].tm[0].value/5*100:0)}">${table[row].tm[0]?table[row].tm[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'tm', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].tm?table[row].tm[0].value/5*100:0)}">${table[row].tm?table[row].tm[0].name:"NA"}</td>
             
-            <td onclick="box(event, '${row}', 'exp', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].exp[0]?table[row].exp[0].value/5*100:0)}">${table[row].exp[0]?table[row].exp[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'exp', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].exp?table[row].exp[0].value/5*100:0)}">${table[row].exp?table[row].exp[0].name:"NA"}</td>
             
-            <td onclick="box(event, '${row}', 'kl', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].kl[0]?table[row].kl[0].value/5*100:0)}">${table[row].kl[0]?table[row].kl[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'kl', 5)" style="cursor: pointer; background-color: ${perc2color(table[row].kl?table[row].kl[0].value/5*100:0)}">${table[row].kl?table[row].kl[0].name:"NA"}</td>
             
-            <td onclick="box(event, '${row}', 'ho', 6)" style="cursor: pointer; background-color: ${perc2color(table[row].ho[0]?table[row].ho[0].value/6*100:0)}">${table[row].ho[0]?table[row].ho[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'ho', 6)" style="cursor: pointer; background-color: ${perc2color(table[row].ho?table[row].ho[0].value/6*100:0)}">${table[row].ho?table[row].ho[0].name:"NA"}</td>
             
             <td onclick="box(event, '${row}', 'hb')" style="cursor: pointer; background-color: ${perc2color(table[row].hb?table[row].hb[0].value/1*100:0)}">${table[row].hb?table[row].hb[0].name:"NA"}</td>
             
-            <td onclick="box(event, '${row}', 'gt', ${Math.max(...table[row].gt.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt[0]?table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100:0)}">${table[row].gt[0]?table[row].gt[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'gt', ${Math.max(...table[row].gt.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt?table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100:0)}">${table[row].gt?table[row].gt[0].name:"NA"}</td>
             
             </tr>`
         })
