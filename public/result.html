@@ -37,7 +37,7 @@
       th {color:#D5DDE5; background:#1b1e24; font-size:12px; font-weight: 400; padding:8px; text-align:left; vertical-align:middle;}
       tr {color:black; font-size:12px; font-weight:normal;}
       tr:nth-child(odd) td {background:#EBEBEB;}
-      td {background:#FFFFFF; padding:8px; text-align:left; vertical-align:middle; font-weight:300; font-size:12px;}
+      td {overflow-wrap: break-word; background:#FFFFFF; padding:8px; text-align:left; vertical-align:middle; font-weight:300; font-size:12px;}
     </style>
   </head>
   <body>
@@ -54,16 +54,31 @@
 
       const box = (e, row, col, max=1) => {
         let html = ''
-        if (table[row][col]) table[row][col].map((e,i) => {
+        if (table[row][col]) table[row][col].map((el,i) => {
           if (i<15) {
-            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(Math.min(e.value,max)/max*100)}"><span style="font-weight: 800">${(e.tvalue?e.tvalue:e.value).toFixed(2)+" "}</span>${e.name || "NA"}</td>`
+            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(Math.min(el.value,max)/max*100)}"><span style="font-weight: 800">${(el.tvalue?el.tvalue:el.value).toFixed(2)+" "}</span>${el.name || "NA"}</td>`
           }
         })
         $('#box').html(html)
         if(e.clientX+200 <= $(window).width()) {
-          $('#box').css({left: e.clientX+'px', top: e.clientY+'px'})
+          $('#box').css({left: e.pageX+'px', top: e.pageY+'px'})
         } else {
-          $('#box').css({left: (e.clientX-200)+'px', top: e.clientY+'px'})
+          $('#box').css({left: (e.pageX-200)+'px', top: e.pageY+'px'})
+        }
+        $('#box').show()
+      }
+
+      const genebox = (e, row) => {
+        let html = '<tr>'
+        html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px;"><span style="font-weight: 800">Type </span>${table[row].type || "NA"}</td>`
+        html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px;"><span style="font-weight: 800">Strand </span>${table[row].strand || "NA"}</td>`
+        html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px;"><span style="font-weight: 800">Synonym </span>${table[row].synonym || "NA"}</td>`
+        html += '</tr>'
+        $('#box').html(html)
+        if(e.clientX+200 <= $(window).width()) {
+          $('#box').css({left: e.pageX+'px', top: e.pageY+'px'})
+        } else {
+          $('#box').css({left: (e.pageX-200)+'px', top: e.pageY+'px'})
         }
         $('#box').show()
       }
@@ -268,9 +283,6 @@
           <th>Chr</th>
           <th>Start</th>
           <th>End</th>
-          <th>Type</th>
-          <th>Strand</th>
-          <th>Synonym</th>
           <th>pLI</th>
           <th>ASD</th>
           <th>ADHD</th>
@@ -284,13 +296,10 @@
           </tr>`
         Object.keys(table).map((row, idx) => {
           tableHtml += `<tr>
-            <td>${table[row].name || genes[idx]}</td>
+            <td onclick="genebox(event, '${row}')" style="cursor: pointer;">${table[row].name || genes[idx]}</td>
             <td>${table[row].chr}</td>
             <td>${table[row].start}</td>
             <td>${table[row].end}</td>
-            <td>${table[row].type}</td>
-            <td>${table[row].strand}</td>
-            <td>${table[row].synonym || "NA"}</td>
             
             <td style="background-color: ${perc2color(table[row].pLI?table[row].pLI/1*100:0)}">${table[row].pLI?table[row].pLI.toFixed(2):"NA"}</td>
 
