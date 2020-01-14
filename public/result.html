@@ -243,7 +243,8 @@
           
 
         }
-
+        
+        console.log(table)
         let tableHtml = `<table style="width:100%">`
         tableHtml += `<tr>
           <th>Name</th>
@@ -271,7 +272,7 @@
             <td>${table[row].end}</td>
             <td>${table[row].type}</td>
             <td>${table[row].strand}</td>
-            <td>${table[row].synonym}</td>
+            <td>${table[row].synonym || "NA"}</td>
             
             <td style="background-color: ${perc2color(table[row].pLI?table[row].pLI/1*100:0)}">${table[row].pLI?table[row].pLI.toFixed(2):"NA"}</td>
 
@@ -289,7 +290,7 @@
             
             <td onclick="box(event, '${row}', 'hb')" style="cursor: pointer; background-color: ${perc2color(table[row].hb?table[row].hb[0].value/1*100:0)}">${table[row].hb?table[row].hb[0].name:"NA"}</td>
             
-            <td onclick="box(event, '${row}', 'gt', ${Math.max(...table[row].gt.map(e => e.value))})" style="cursor: pointer; background-color: ${perc2color(table[row].gt?table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100:0)}">${table[row].gt?table[row].gt[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'gt', ${table[row].gt?Math.max(...table[row].gt.map(e => e.value)):1})" style="cursor: pointer; background-color: ${perc2color(table[row].gt?(table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100):0)}">${table[row].gt?table[row].gt[0].name:"NA"}</td>
             
             </tr>`
         })
