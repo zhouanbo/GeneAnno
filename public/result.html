@@ -70,6 +70,7 @@
 
       const genebox = (e, row) => {
         let html = '<tr>'
+        html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px;"><span style="font-weight: 800">Name </span>${table[row].name || "NA"}</td>`
         html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px;"><span style="font-weight: 800">Type </span>${table[row].type || "NA"}</td>`
         html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px;"><span style="font-weight: 800">Strand </span>${table[row].strand || "NA"}</td>`
         html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px;"><span style="font-weight: 800">Synonym </span>${table[row].synonym || "NA"}</td>`

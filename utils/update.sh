@@ -3,10 +3,12 @@
 # Accessed Jan 10, 2020
 # brew install csvkit
 
+
 # HGNC
 # wget ftp://ftp.ebi.ac.uk/pub/databases/genenames/new/json/hgnc_complete_set.json
 # sed -i '' 's/docs/hgnc/' hgnc_complete_set.json
 # node hgnc-import.js
+
 
 # IMPC
 # wget ftp://ftp.ebi.ac.uk/pub/databases/impc/release-10.1/csv/ALL_genotype_phenotype.csv.gz
@@ -14,10 +16,12 @@
 # csvjson ALL_genotype_phenotype.csv > ALL_genotype_phenotype.json
 # node impc-import.js
 
+
 # HOM
 # wget http://www.informatics.jax.org/downloads/reports/HOM_MouseHumanSequence.rpt
 # awk '$2=="mouse, laboratory" || $2=="human"{print}' FS="\t" HOM_AllOrganism.rpt > HOM_AllOrganism.filter.rpt
 # awk 'BEGIN{print("let hom_convert={")}{a[$1]=$4;if($1 in a){print("\""$4"\":\""a[$1]"\",")}}END{print("}")}' FS="\t" HOM_AllOrganism.filter.rpt > HOM_AllOrganism.js
+
 
 # RefSeq
 # wget ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_genomic.gff.gz
@@ -25,6 +29,7 @@
 # awk 'BEGIN{print("name\tstart\tend\tstrand\tdescription\tsynonym\tbiotype")}$0!~/^#/&&$3=="gene"{split($9,a1,"Name=");split(a1[2],a2,";");split($9,b1,"description=");split(b1[2],b2,";");split($9,c1,"gene_synonym=");split(c1[2],c2,";");split($9,d1,"gene_biotype=");split(d1[2],d2,";");print(a2[1]"\t"$1"\t"$4"\t"$5"\t"$7"\t"b2[1]"\t"c2[1]"\t"d2[1])}' FS="\t" OFS="\t" GRCh38_latest_genomic.gff | sed "s/\'//g" > GRCh38_latest.tsv
 # csvjson GRCh38_latest.tsv > GRCh38_latest.json
 # node refseq-import.js
+
 
 # DISEASE
 # wget http://download.jensenlab.org/human_disease_textmining_filtered.tsv
@@ -63,10 +68,10 @@
 # cp allen_convert.js genes_martix_csv/
 # cd genes_martix_csv
 # npm i csv-parse mathjs
-# node allen_convert.js
+# node allen-convert.js
 # mv allen.json ../
 # cd ..
-node allen-import.js
+# node allen-import.js
 
 
 # rm *tsv
