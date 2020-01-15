@@ -15,6 +15,7 @@
     <script defer src="js/refseq_conversion.js"></script>
     <script defer src="js/ncbi_conversion.js"></script>
     <script defer src="js/hom_conversion.js"></script>
+    <script defer src="js/synonym_conversion.js"></script>
     <script defer src="js/sfari.js"></script>
     <script defer src="js/adhdgene.js"></script>
 
@@ -106,6 +107,14 @@
         document.getElementById("message").innerHTML = '<h2>GeneAnno</h2><h1>Processing...</h1>'
         
         let genes = JSON.parse(localStorage.getItem('genes'))
+        //search for synonym
+        genes = genes.map(gene => {
+          if (synonym_convert[gene]) {
+            return synonym_convert[gene]
+          } else {
+            return gene
+          }
+        })
         
         for(let gene of genes) {
           document.getElementById("message").innerHTML = `<h2>GeneAnno</h2><h1>Processing...(${gene})</h1>`
