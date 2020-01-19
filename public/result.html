@@ -127,7 +127,7 @@
             table[gene].type || 'NA', 
             table[gene].strand || 'NA', 
             table[gene].synonym?table[gene].synonym.replace(/\,/g, '|'):'NA', 
-            table[gene].pLI || 'NA', 
+            table[gene].pLI.toFixed(2) || 'NA', 
             table[gene].sfari || '0', 
             table[gene].adhdgene || '0', 
             table[gene].tm?table[gene].tm.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA', 
