@@ -99,6 +99,50 @@
         return '#' + ('000000' + h.toString(16)).slice(-6);
       }
 
+      const download = (filename, data) => {
+        let blob = new Blob([data], {type: 'text/csv'});
+        if(window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveBlob(blob, filename);
+        } else {
+          let elem = window.document.createElement('a');
+          elem.href = window.URL.createObjectURL(blob);
+          elem.download = filename;        
+          document.body.appendChild(elem);
+          elem.click();        
+          document.body.removeChild(elem);
+        }
+      }
+
+      const tocsv = () => {
+        let genes = JSON.parse(localStorage.getItem('genes'))
+        let csv = []
+        csv.push(`Name,Chr,Start,End,Type,Strand,Synonym,pLI,ASD,ADHD,Textmining,Experiments,Knowledge,Mouse,Prediction,GTEx,BrainSpan`)
+        for(let gene of genes) {
+          let csv_array = []
+          csv_array.push(
+            table[gene].name, 
+            table[gene].chr || 'NA', 
+            table[gene].start || 'NA', 
+            table[gene].end || 'NA', 
+            table[gene].type || 'NA', 
+            table[gene].strand || 'NA', 
+            table[gene].synonym?table[gene].synonym.replace(/\,/g, '|'):'NA', 
+            table[gene].pLI || 'NA', 
+            table[gene].sfari || '0', 
+            table[gene].adhdgene || '0', 
+            table[gene].tm?table[gene].tm.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA', 
+            table[gene].exp?table[gene].exp.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA', 
+            table[gene].kl?table[gene].kl.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
+            table[gene].ho?table[gene].ho.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
+            table[gene].hb?table[gene].hb.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
+            table[gene].gt?table[gene].gt.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
+            table[gene].al?table[gene].al.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA'
+          )
+          csv.push(csv_array.join(','))
+        }
+        download('geneanno_result.csv', csv.join('\n'))
+      }
+
       document.addEventListener('DOMContentLoaded', async () => {
 
 
@@ -115,6 +159,7 @@
             return gene
           }
         })
+        localStorage.setItem('genes',JSON.stringify(genes))
         
         for(let gene of genes) {
           document.getElementById("message").innerHTML = `<h2>GeneAnno</h2><h1>Processing...(${gene})</h1>`
@@ -339,7 +384,7 @@
           <h2>GeneAnno</h2>
           <h1>Report</h1>
           <div id="table">${tableHtml}</div>
-          <a target="_blank" onclick="alert('hi')">Download</a>
+          <a target="_blank" onclick="tocsv()">Download</a>
         `
       });
     </script>
