@@ -53,11 +53,11 @@
           if (!$("#box").is(e.target) && $("#box").has(e.target).length === 0) $("#box").hide()
       });
 
-      const box = (e, row, col, max=1) => {
+      const box = (e, row, col, max=1, color=1) => {
         let html = ''
         if (table[row][col]) table[row][col].map((el,i) => {
           if (i<15) {
-            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${perc2color(Math.min(el.value,max)/max*100)}"><span style="font-weight: 800">${(el.tvalue?el.tvalue:el.value).toFixed(2)+" "}</span>${el.name || "NA"}</td>`
+            html += `<td style="width: 200px; float: left; box-shadow: black 1px 1px 3px; background-color: ${color?perc2color(Math.min(el.value,max)/max*100):perc2grey(Math.min(el.value,max)/max*100)}"><span style="font-weight: 800">${(el.tvalue?el.tvalue:el.value).toFixed(2)+" "}</span>${el.name || "NA"}</td>`
           }
         })
         $('#box').html(html)
@@ -85,7 +85,7 @@
         $('#box').show()
       }
 
-      const perc2color = (perc) => {
+      const perc2color = perc => {
         let r, g, b = 0;
         if(perc < 50) {
           g = 255;
@@ -96,6 +96,12 @@
           g = Math.round(510 - 5.10 * perc);
         }
         let h = r * 0x10000 + g * 0x100 + b * 0x1;
+        return '#' + ('000000' + h.toString(16)).slice(-6);
+      }
+
+      const perc2grey = perc => {
+        let c = Math.round(256-perc/100*128)
+        let h = c * 0x10000 + c * 0x100 + c * 0x1;
         return '#' + ('000000' + h.toString(16)).slice(-6);
       }
 
@@ -372,9 +378,9 @@
             
             <td onclick="box(event, '${row}', 'hb')" style="cursor: pointer; background-color: ${perc2color(table[row].hb?table[row].hb[0].value/1*100:0)}">${table[row].hb?table[row].hb[0].name:"NA"}</td>
             
-            <td onclick="box(event, '${row}', 'gt', ${table[row].gt?Math.max(...table[row].gt.map(e => e.value)):1})" style="cursor: pointer; background-color: ${perc2color(table[row].gt?(table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100):0)}">${table[row].gt?table[row].gt[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'gt', ${table[row].gt?Math.max(...table[row].gt.map(e => e.value)):1}, 0)" style="cursor: pointer; background-color: ${perc2grey(table[row].gt?(table[row].gt[0].value/Math.max(...table[row].gt.map(e => e.value))*100):0)}">${table[row].gt?table[row].gt[0].name:"NA"}</td>
             
-            <td onclick="box(event, '${row}', 'al', ${table[row].al?Math.max(...table[row].al.map(e => e.value)):1})" style="cursor: pointer; background-color: ${perc2color(table[row].al?(table[row].al[0].value/Math.max(...table[row].al.map(e => e.value))*100):0)}">${table[row].al?table[row].al[0].name:"NA"}</td>
+            <td onclick="box(event, '${row}', 'al', ${table[row].al?Math.max(...table[row].al.map(e => e.value)):1}, 0)" style="cursor: pointer; background-color: ${perc2grey(table[row].al?(table[row].al[0].value/Math.max(...table[row].al.map(e => e.value))*100):0)}">${table[row].al?table[row].al[0].name:"NA"}</td>
 
             </tr>`
         })
