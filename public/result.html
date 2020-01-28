@@ -122,7 +122,7 @@
       const tocsv = () => {
         let genes = JSON.parse(localStorage.getItem('genes'))
         let csv = []
-        csv.push(`Name,Chr,Start,End,Type,Strand,Synonym,pLI,ASD,ADHD,Textmining,Experiments,Knowledge,Mouse,Prediction,GTEx,BrainSpan`)
+        csv.push(`Name,Chr,Start,End,Description,Type,Strand,Synonym,pLI,ASD,ADHD,Textmining,Experiments,Knowledge,Mouse,Prediction,GTEx,BrainSpan`)
         for(let gene of genes) {
           let csv_array = []
           csv_array.push(
@@ -130,6 +130,7 @@
             table[gene].chr || 'NA', 
             table[gene].start || 'NA', 
             table[gene].end || 'NA', 
+            table[gene].description || 'NA',
             table[gene].type || 'NA', 
             table[gene].strand || 'NA', 
             table[gene].synonym?table[gene].synonym.replace(/\,/g, '|'):'NA', 
@@ -181,6 +182,7 @@
             if (!chr) return
             r.push({
               name: data.name,
+              description: data.description,
               chr: chr.ucsc_id,
               contig: data.contig,
               start: data.start,
@@ -344,6 +346,7 @@
           <th>Chr</th>
           <th>Start</th>
           <th>End</th>
+          <th>Description</th>
           <th>pLI</th>
           <th>ASD</th>
           <th>ADHD</th>
@@ -361,6 +364,7 @@
             <td>${table[row].chr}</td>
             <td>${table[row].start}</td>
             <td>${table[row].end}</td>
+            <td>${table[row].description}</td>
             
             <td style="background-color: ${perc2color(table[row].pLI?table[row].pLI/1*100:0)}">${table[row].pLI?table[row].pLI.toFixed(2):"NA"}</td>
 
