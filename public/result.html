@@ -100,9 +100,13 @@
       }
 
       const perc2grey = perc => {
-        let c = Math.round(256-perc/100*128)
-        let h = c * 0x10000 + c * 0x100 + c * 0x1;
-        return '#' + ('000000' + h.toString(16)).slice(-6);
+        if (perc) {
+          let c = Math.round(256-perc/100*128)
+          let h = c * 0x10000 + c * 0x100 + c * 0x1;
+          return '#' + ('000000' + h.toString(16)).slice(-6);
+        } else {
+          return '#FFFFFF'
+        }
       }
 
       const download = (filename, data) => {
