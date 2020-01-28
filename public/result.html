@@ -186,7 +186,7 @@
             if (!chr) return
             r.push({
               name: data.name,
-              description: decodeURIComponent(data.description),
+              description: decodeURIComponent(data.description).replace(',', ''),
               chr: chr.ucsc_id,
               contig: data.contig,
               start: data.start,
