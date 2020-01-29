@@ -130,24 +130,24 @@
         for(let gene of genes) {
           let csv_array = []
           csv_array.push(
-            table[gene].name, 
-            table[gene].chr || 'NA', 
-            table[gene].start || 'NA', 
-            table[gene].end || 'NA', 
-            table[gene].description || 'NA',
-            table[gene].type || 'NA', 
-            table[gene].strand || 'NA', 
-            table[gene].synonym?table[gene].synonym.replace(/\,/g, '|'):'NA', 
-            table[gene].pLI?table[gene].pLI.toFixed(2):'NA', 
-            table[gene].sfari || '0', 
-            table[gene].adhdgene || '0', 
-            table[gene].tm?table[gene].tm.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA', 
-            table[gene].exp?table[gene].exp.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA', 
-            table[gene].kl?table[gene].kl.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
-            table[gene].ho?table[gene].ho.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
-            table[gene].hb?table[gene].hb.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
-            table[gene].gt?table[gene].gt.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA',
-            table[gene].al?table[gene].al.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name.replace(/\,/g, '')).join('|'):'NA'
+            '"'+(table[gene].name)+'"', 
+            '"'+(table[gene].chr || 'NA')+'"', 
+            '"'+(table[gene].start || 'NA')+'"', 
+            '"'+(table[gene].end || 'NA')+'"', 
+            '"'+(table[gene].description || 'NA')+'"',
+            '"'+(table[gene].type || 'NA')+'"', 
+            '"'+(table[gene].strand || 'NA')+'"', 
+            '"'+(table[gene].synonym?table[gene].synonym:'NA')+'"', 
+            '"'+(table[gene].pLI?table[gene].pLI.toFixed(2):'NA')+'"', 
+            '"'+(table[gene].sfari || '0')+'"', 
+            '"'+(table[gene].adhdgene || '0')+'"', 
+            '"'+(table[gene].tm?table[gene].tm.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name).join('|'):'NA')+'"', 
+            '"'+(table[gene].exp?table[gene].exp.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name).join('|'):'NA')+'"', 
+            '"'+(table[gene].kl?table[gene].kl.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name).join('|'):'NA')+'"',
+            '"'+(table[gene].ho?table[gene].ho.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name).join('|'):'NA')+'"',
+            '"'+(table[gene].hb?table[gene].hb.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name).join('|'):'NA')+'"',
+            '"'+(table[gene].gt?table[gene].gt.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name).join('|'):'NA')+'"',
+            '"'+(table[gene].al?table[gene].al.map(e=>(e.tvalue?e.tvalue:e.value).toFixed(2)+":"+e.name).join('|'):'NA')+'"'
           )
           csv.push(csv_array.join(','))
         }
@@ -186,7 +186,7 @@
             if (!chr) return
             r.push({
               name: data.name,
-              description: decodeURIComponent(data.description).replace(',', ''),
+              description: decodeURIComponent(data.description),
               chr: chr.ucsc_id,
               contig: data.contig,
               start: data.start,
@@ -229,7 +229,7 @@
           snapshot.forEach(doc => {
             let data = doc.data()
             r.push({
-              name: data.NAME,
+              name: decodeURIComponent(data.NAME),
               value: data.Confidence,
             })
           })
@@ -241,7 +241,7 @@
           snapshot.forEach(doc => {
             let data = doc.data()
             r.push({
-              name: data.NAME,
+              name: decodeURIComponent(data.NAME),
               value: data.Confidence,
             })
           })
@@ -253,7 +253,7 @@
           snapshot.forEach(doc => {
             let data = doc.data()
             r.push({
-              name: data.NAME,
+              name: decodeURIComponent(data.NAME),
               value: data.Confidence,
             })
           })
@@ -269,7 +269,7 @@
               let data = doc.data()
               if (data.mp_term_name)
                 r.push({
-                  name: data.mp_term_name,
+                  name: decodeURIComponent(data.mp_term_name),
                   value: data.p_value == 0 ? 0.0000000001 : data.p_value,
                 })
             })
@@ -296,7 +296,7 @@
             .then((myJson) => {
               let data = myJson.sort((a,b) => a.score < b.score ? 1 : -1).slice(0,15)
               r = data.map(e => {
-                e.name = e.term.title
+                e.name = decodeURIComponent(e.term.title)
                 e.value = e.score
                 return e
               })
@@ -315,7 +315,7 @@
             delete data.Description
             Object.keys(data).map(e => {
               r.push({
-                name: e,
+                name: decodeURIComponent(e),
                 value: data[e]
               })
             })
@@ -332,7 +332,7 @@
             delete data.name
             Object.keys(data).map(e => {
               r.push({
-                name: e,
+                name: decodeURIComponent(e),
                 value: data[e]
               })
             })
